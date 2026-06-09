@@ -4,7 +4,7 @@
 
 ## 🚀 Live Demo
 
-[Visit ShopWave](#) *(Update this link once your Vercel deployment is live!)*
+[Visit ShopWave](https://shop-wave-three-nu.vercel.app/login).
 
 ---
 
