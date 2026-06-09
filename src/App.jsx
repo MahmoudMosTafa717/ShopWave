@@ -140,7 +140,10 @@ function App() {
         <WishlistContextProvider>
           <QueryClientProvider client={queryClient}>
             <ProductsContextProvider>
-              <Toaster />
+              <Toaster 
+                position="top-right" 
+                toastOptions={{ style: { marginTop: '70px' } }} 
+              />
               {/* <ReactQueryDevtools initialIsOpen={false} /> */}
               <RouterProvider router={router} />
             </ProductsContextProvider>
