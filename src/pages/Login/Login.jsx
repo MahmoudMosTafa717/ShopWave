@@ -25,18 +25,18 @@ export default function Login() {
     setIsLoading(true);
     axios
       .post('https://ecommerce.routemisr.com/api/v1/auth/signin', data)
-      .then((data) => {
-        setUserToken(data.data.token);
-        localStorage.setItem('authToken', data.data.token);
+      .then((res) => {
+        setUserToken(res.data.token);
+        localStorage.setItem('authToken', res.data.token);
         setErr(null);
         setIsLoading(false);
-        if (data.data.message === 'success') {
+        if (res.data.message === 'success') {
           navigate('/');
         }
       })
       .catch((err) => {
         setIsLoading(false);
-        setErr(err.response.data.message);
+        setErr(err.response?.data?.message || 'An error occurred');
       });
   }
 

@@ -27,8 +27,8 @@ export default function Register() {
       .then((res) => {
         setErr(null);
         toast.success('Account created successfully');
-        setUserToken(data.data.token);
-        localStorage.setItem('authToken', data.data.token);
+        setUserToken(res.data.token);
+        localStorage.setItem('authToken', res.data.token);
         setIsLoading(false);
         if (res.data.message === 'success') {
           navigate('/login');
@@ -37,7 +37,7 @@ export default function Register() {
       .catch((err) => {
         toast.error('Please try again');
         setIsLoading(false);
-        setErr(err.response.data.message);
+        setErr(err.response?.data?.message || 'An error occurred');
       });
   }
 

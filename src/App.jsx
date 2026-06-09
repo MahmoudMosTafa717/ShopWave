@@ -23,6 +23,7 @@ import Categories from './pages/Categories/Categories';
 import ProductsContextProvider from './context/Products/Products';
 import Search from './pages/Search/Search';
 import RedirectIfAuthenticated from './components/RedirectIfAuthenticated/RedirectIfAuthenticated';
+import AllOrders from './pages/AllOrders/AllOrders';
 
 function App() {
   const queryClient = new QueryClient();
@@ -118,6 +119,14 @@ function App() {
           element: (
             <ProtectedRoute>
               <Search />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: 'allorders',
+          element: (
+            <ProtectedRoute>
+              <AllOrders />
             </ProtectedRoute>
           ),
         },

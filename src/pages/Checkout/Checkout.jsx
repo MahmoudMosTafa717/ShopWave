@@ -22,11 +22,13 @@ export default function Checkout() {
 
     const config = {
       method: 'post',
-      url: `https://ecommerce.routemisr.com/api/v1/orders/checkout-session/${id}?url=https://ecommerce-nine-ivory-88.vercel.app/`,
+      url: `https://ecommerce.routemisr.com/api/v1/orders/checkout-session/${id}?url=${window.location.origin}`,
       headers: {
         token: userToken,
       },
-      data: data,
+      data: {
+        shippingAddress: data,
+      },
     };
 
     axios.request(config).then((response) => {
