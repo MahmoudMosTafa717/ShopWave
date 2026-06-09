@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { cartContext } from '../../context/Cart/Cart';
 import { Link } from 'react-router-dom';
 import Spinner from '../../components/Spinner/Spinner';
+import { Helmet } from 'react-helmet';
 
 export default function Cart() {
   const { getProducts, deleteProduct, updateProductQuantity } =
@@ -29,7 +30,11 @@ export default function Cart() {
   }, []);
 
   return (
-    <div className="container flex flex-wrap">
+    <>
+      <Helmet>
+        <title>ShopWave - Cart</title>
+      </Helmet>
+      <div className="container flex flex-wrap">
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg w-full">
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -200,5 +205,6 @@ export default function Cart() {
         </div>
       </div>
     </div>
+    </>
   );
 }

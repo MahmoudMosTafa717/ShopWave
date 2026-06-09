@@ -153,7 +153,7 @@ export default function Footer() {
           <div>
             <div className="text-center text-gray-500 dark:text-gray-400">
               &quot;It does not matter how slowly you go as long as you do not
-              stop.&quot; - <span className="italic text-md">Confucius</span>
+              stop.&quot;
             </div>
           </div>
           <div>

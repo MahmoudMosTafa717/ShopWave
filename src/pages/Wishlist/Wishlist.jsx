@@ -3,6 +3,7 @@ import { wishlistContext } from '../../context/Wishlist/Wishlist';
 import Spinner from '../../components/Spinner/Spinner';
 import { cartContext } from '../../context/Cart/Cart';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 export default function Wishlist() {
   const { getWishlist, deleteWishlistItem } = useContext(wishlistContext);
@@ -25,6 +26,9 @@ export default function Wishlist() {
 
   return (
     <>
+      <Helmet>
+        <title>ShopWave - Wishlist</title>
+      </Helmet>
       <div className="container flex flex-wrap">
         <div className="relative overflow-x-auto shadow-md sm:rounded-lg w-full">
           <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">

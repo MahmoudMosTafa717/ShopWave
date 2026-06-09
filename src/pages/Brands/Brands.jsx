@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import axios from 'axios';
 import Spinner from '../../components/Spinner/Spinner';
 import { useQuery } from '@tanstack/react-query';
+import { Helmet } from 'react-helmet';
 
 export default function Brands() {
   // Queries
@@ -31,6 +32,9 @@ export default function Brands() {
 
   return (
     <>
+      <Helmet>
+        <title>ShopWave - Brands</title>
+      </Helmet>
       <div className="container flex flex-wrap items-center">
         <h3 className="text-3xl font-medium mb-5 w-full">Our Brands</h3>
         {data ? (

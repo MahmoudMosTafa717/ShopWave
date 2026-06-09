@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import axios from 'axios';
 import Spinner from '../../components/Spinner/Spinner';
 import { useQuery } from '@tanstack/react-query';
+import { Helmet } from 'react-helmet';
 
 export default function Categories() {
   // Queries
@@ -29,6 +30,9 @@ export default function Categories() {
 
   return (
     <>
+      <Helmet>
+        <title>ShopWave - Categories</title>
+      </Helmet>
       <div className="container flex flex-wrap items-center">
         <h3 className="text-3xl font-medium mb-5 w-full">Our Categories</h3>
         {data ? (

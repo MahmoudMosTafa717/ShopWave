@@ -3,6 +3,7 @@ import { wishlistContext } from '../../context/Wishlist/Wishlist';
 import Spinner from '../../components/Spinner/Spinner';
 import ProductItem from '../../components/ProductItem/ProductItem';
 import { productsContext } from '../../context/Products/Products';
+import { Helmet } from 'react-helmet';
 
 export default function Search() {
   const { searchRes } = useContext(productsContext);
@@ -33,6 +34,9 @@ export default function Search() {
 
   return (
     <>
+      <Helmet>
+        <title>ShopWave - Search</title>
+      </Helmet>
       <div className="container flex flex-wrap items-center">
         <h3 className="text-3xl font-medium mb-5 w-full">Search Results:</h3>
         {searchRes ? (
