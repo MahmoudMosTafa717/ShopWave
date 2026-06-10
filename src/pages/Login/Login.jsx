@@ -40,6 +40,97 @@ export default function Login() {
       });
   }
 
+  function handleDemoLogin() {
+    setIsLoading(true);
+    const savedEmail = localStorage.getItem('shopwave_demo_email');
+    const savedPassword = localStorage.getItem('shopwave_demo_password');
+
+    if (savedEmail && savedPassword) {
+      axios
+        .post('https://ecommerce.routemisr.com/api/v1/auth/signin', {
+          email: savedEmail,
+          password: savedPassword,
+        })
+        .then((res) => {
+          setUserToken(res.data.token);
+          localStorage.setItem('authToken', res.data.token);
+          setErr(null);
+          setIsLoading(false);
+          if (res.data.message === 'success') {
+            navigate('/');
+          }
+        })
+        .catch(() => {
+          // If login fails (e.g. account expired or deleted from API), register a new one
+          registerAndLoginNewDemoAccount();
+        });
+    } else {
+      registerAndLoginNewDemoAccount();
+    }
+  }
+
+  function registerAndLoginNewDemoAccount() {
+    const randomSuffix = Math.floor(100000 + Math.random() * 900000);
+    const email = `demo_${Date.now()}_${randomSuffix}@shopwave.com`;
+    const password = `DemoPassword@${randomSuffix}`;
+    const name = `Demo User ${randomSuffix}`;
+    const prefixes = ['010', '011', '012', '015'];
+    const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const randomDigits = Math.floor(10000000 + Math.random() * 90000000);
+    const phone = `${randomPrefix}${randomDigits}`;
+
+    const signupData = {
+      name,
+      email,
+      password,
+      rePassword: password,
+      phone,
+    };
+
+    axios
+      .post('https://ecommerce.routemisr.com/api/v1/auth/signup', signupData)
+      .then((res) => {
+        localStorage.setItem('shopwave_demo_email', email);
+        localStorage.setItem('shopwave_demo_password', password);
+
+        axios
+          .post('https://ecommerce.routemisr.com/api/v1/auth/signin', { email, password })
+          .then((loginRes) => {
+            setUserToken(loginRes.data.token);
+            localStorage.setItem('authToken', loginRes.data.token);
+            setErr(null);
+            setIsLoading(false);
+            if (loginRes.data.message === 'success') {
+              navigate('/');
+            }
+          })
+          .catch(() => {
+            fallbackToDefaultDemo();
+          });
+      })
+      .catch(() => {
+        fallbackToDefaultDemo();
+      });
+  }
+
+  function fallbackToDefaultDemo() {
+    axios
+      .post('https://ecommerce.routemisr.com/api/v1/auth/signin', loginData)
+      .then((res) => {
+        setUserToken(res.data.token);
+        localStorage.setItem('authToken', res.data.token);
+        setErr(null);
+        setIsLoading(false);
+        if (res.data.message === 'success') {
+          navigate('/');
+        }
+      })
+      .catch((err) => {
+        setIsLoading(false);
+        setErr(err.response?.data?.message || 'An error occurred');
+      });
+  }
+
   const validate = Yup.object({
     email: Yup.string()
       .required('Email is required')
@@ -153,7 +244,7 @@ export default function Login() {
             ) : (
               <button
                 type="button"
-                onClick={() => handleLogin(loginData)}
+                onClick={handleDemoLogin}
                 className="w-full text-amazon-dark bg-gray-100 hover:bg-gray-200 font-bold rounded-lg text-sm px-5 py-2.5 text-center transition-all"
               >
                 Demo Login
