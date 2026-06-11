@@ -77,43 +77,23 @@ function App() {
         },
         {
           path: 'cart',
-          element: (
-            <ProtectedRoute>
-              <Cart />
-            </ProtectedRoute>
-          ),
+          element: <Cart />,
         },
         {
           path: 'wishlist',
-          element: (
-            <ProtectedRoute>
-              <Wishlist />
-            </ProtectedRoute>
-          ),
+          element: <Wishlist />,
         },
         {
           path: 'brands',
-          element: (
-            <ProtectedRoute>
-              <Brands />
-            </ProtectedRoute>
-          ),
+          element: <Brands />,
         },
         {
           path: 'categories',
-          element: (
-            <ProtectedRoute>
-              <Categories />
-            </ProtectedRoute>
-          ),
+          element: <Categories />,
         },
         {
           path: 'categories/:categoryId',
-          element: (
-            <ProtectedRoute>
-              <CategoryProducts />
-            </ProtectedRoute>
-          ),
+          element: <CategoryProducts />,
         },
         {
           path: 'search',

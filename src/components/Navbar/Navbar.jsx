@@ -6,11 +6,14 @@ import { initFlowbite } from 'flowbite';
 import { productsContext } from '../../context/Products/Products';
 import { cartContext } from '../../context/Cart/Cart';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 export default function Navbar() {
   const { userToken, setUserToken } = useContext(authContext);
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
 
   const { data, setSearchRes } = useContext(productsContext);
   const { numOfCartItems } = useContext(cartContext);
@@ -44,7 +47,19 @@ export default function Navbar() {
 
   useEffect(() => {
     initFlowbite();
+    axios.get('https://ecommerce.routemisr.com/api/v1/categories')
+      .then(res => {
+        if (res.data && res.data.data) {
+          setCategories(res.data.data);
+        }
+      })
+      .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    setIsSidebarOpen(false);
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   return (
     <>
@@ -114,10 +129,10 @@ export default function Navbar() {
               </div>
             )}
 
-            <Link to="/cart" aria-label="Cart" onClick={(e) => handleProtectedNavigation(e, '/cart')} className="relative flex items-center text-white hover:text-amazon-orange transition-colors ml-4 mr-2 group">
+            <Link to="/cart" aria-label="Cart" className="relative flex items-center text-white hover:text-amazon-orange transition-colors ml-4 mr-2 group">
               <div className="relative">
                 <i className="fas fa-shopping-cart fa-2x"></i>
-                {userToken && numOfCartItems > 0 && (
+                {numOfCartItems > 0 && (
                   <span className="absolute -top-1 -right-2 bg-amazon-orange text-amazon-dark text-xs font-bold px-1.5 py-0.5 rounded-full border-2 border-amazon-dark group-hover:border-amazon-orange transition-colors">
                     {numOfCartItems}
                   </span>
@@ -155,7 +170,7 @@ export default function Navbar() {
             <li><Link to="/" className="block py-2 text-amazon-dark font-bold border-b border-gray-300">Home</Link></li>
             <li><Link to="/categories" className="block py-2 text-amazon-dark font-bold border-b border-gray-300">Categories</Link></li>
             <li><Link to="/brands" className="block py-2 text-amazon-dark font-bold border-b border-gray-300">Brands</Link></li>
-            <li><Link to="/wishlist" onClick={(e) => handleProtectedNavigation(e, '/wishlist')} className="block py-2 text-amazon-dark font-bold border-b border-gray-300">Wishlist</Link></li>
+            <li><Link to="/wishlist" className="block py-2 text-amazon-dark font-bold border-b border-gray-300">Wishlist</Link></li>
             {userToken ? (
               <>
                 <li><Link to="/allorders" className="block py-2 text-amazon-dark font-bold border-b border-gray-300">Orders</Link></li>
@@ -174,32 +189,152 @@ export default function Navbar() {
         <div className="hidden lg:flex bg-amazon-light text-amazon-dark px-4 py-1.5 shadow-sm text-sm font-medium items-center overflow-x-auto whitespace-nowrap">
           <div className="flex items-center gap-6 max-w-screen-xl mx-auto w-full">
             {/* Menu Icon */}
-            <button className="flex items-center gap-1 font-bold hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="flex items-center gap-1 font-bold hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors"
+            >
               <i className="fa-solid fa-bars"></i> All
             </button>
             
-            {userToken ? (
-              <>
-                <Link to="/allorders" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Your Orders</Link>
-                <Link to="/wishlist" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Wishlist</Link>
-                <Link to="/categories" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Categories</Link>
-                <Link to="/brands" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Brands</Link>
-                <Link to="/cart" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Cart</Link>
-              </>
-            ) : (
-              <>
-                <a href="/#categories" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Categories</a>
-                <a href="/#bestsellers" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Best Sellers</a>
-                <a href="/#promo" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Today's Deals</a>
-                <a href="/#whychooseus" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Customer Service</a>
-                <a href="/#testimonials" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Testimonials</a>
-              </>
+            <Link to="/categories" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Categories</Link>
+            <Link to="/brands" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Brands</Link>
+            <Link to="/wishlist" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Wishlist</Link>
+            <Link to="/cart" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Cart</Link>
+            <a href="/#promo" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Today's Deals</a>
+            <a href="/#bestsellers" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Best Sellers</a>
+            {userToken && (
+              <Link to="/allorders" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Your Orders</Link>
             )}
           </div>
         </div>
       </nav>
       {/* Spacer to prevent content from hiding behind fixed navbars */}
       <div className="h-[110px] lg:h-[114px] w-full"></div>
+
+      {/* Sliding Sidebar Drawer Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-[100] transition-opacity duration-300 cursor-pointer"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      
+      {/* Sliding Sidebar Drawer Panel */}
+      <div
+        className={`fixed top-0 left-0 h-full w-[350px] bg-white z-[101] shadow-2xl transition-transform duration-300 transform flex flex-col ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* Drawer Header */}
+        <div className="bg-amazon-dark text-white px-8 py-5 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <i className="fa-solid fa-circle-user text-3xl text-gray-300"></i>
+            <span className="font-bold text-lg">
+              {userToken ? 'Hello, User' : 'Hello, sign in'}
+            </span>
+          </div>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            aria-label="Close menu"
+            className="text-white hover:text-amazon-orange transition-colors"
+          >
+            <i className="fa-solid fa-xmark text-2xl"></i>
+          </button>
+        </div>
+
+        {/* Drawer Body */}
+        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6 text-sm text-amazon-dark">
+          {/* Shop By Category */}
+          <div>
+            <h3 className="text-base font-extrabold text-gray-900 mb-4 border-b pb-2 uppercase tracking-wider">
+              Shop By Category
+            </h3>
+            <ul className="space-y-3">
+              {categories.length > 0 ? (
+                categories.map((category) => (
+                  <li key={category._id}>
+                    <Link
+                      to={`/categories/${category._id}`}
+                      className="flex items-center justify-between py-2 px-3 rounded hover:bg-gray-100 font-medium text-gray-700 hover:text-amazon-orange transition-all group"
+                    >
+                      <span>{category.name}</span>
+                      <i className="fa-solid fa-chevron-right text-xs text-gray-400 group-hover:text-amazon-orange group-hover:translate-x-1 transition-transform"></i>
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <div className="py-2 text-gray-400 flex items-center gap-2">
+                  <i className="fa-solid fa-spinner animate-spin"></i> Loading categories...
+                </div>
+              )}
+            </ul>
+          </div>
+
+          {/* Help & Settings */}
+          <div>
+            <h3 className="text-base font-extrabold text-gray-900 mb-4 border-b pb-2 uppercase tracking-wider">
+              Help & Settings
+            </h3>
+            <ul className="space-y-3 font-medium text-gray-700">
+              <li>
+                <Link to="/" className="block py-2 px-3 rounded hover:bg-gray-100 hover:text-amazon-orange transition-all">
+                  Home Page
+                </Link>
+              </li>
+              <li>
+                <Link to="/cart" className="block py-2 px-3 rounded hover:bg-gray-100 hover:text-amazon-orange transition-all">
+                  Shopping Cart
+                </Link>
+              </li>
+              <li>
+                <Link to="/wishlist" className="block py-2 px-3 rounded hover:bg-gray-100 hover:text-amazon-orange transition-all">
+                  Your Wishlist
+                </Link>
+              </li>
+              {userToken ? (
+                <>
+                  <li>
+                    <Link to="/allorders" className="block py-2 px-3 rounded hover:bg-gray-100 hover:text-amazon-orange transition-all">
+                      Your Orders
+                    </Link>
+                  </li>
+                  <li className="border-t pt-3 mt-3">
+                    <Link
+                      to="/login"
+                      onClick={() => {
+                        logout();
+                        setIsSidebarOpen(false);
+                      }}
+                      className="block py-2 px-3 rounded text-red-600 hover:bg-red-50 transition-all font-bold"
+                    >
+                      <i className="fa-solid fa-sign-out-alt mr-2"></i> Sign Out
+                    </Link>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li className="border-t pt-3 mt-3">
+                    <Link
+                      to="/login"
+                      className="block py-2 px-3 rounded bg-amazon-orange text-white hover:bg-opacity-95 text-center font-bold transition-all shadow-md"
+                    >
+                      Sign In
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/register"
+                      className="block py-2 px-3 rounded border border-amazon-dark text-amazon-dark hover:bg-gray-50 text-center font-bold transition-all"
+                    >
+                      Create Account
+                    </Link>
+                  </li>
+                </>
+              )}
+            </ul>
+          </div>
+        </div>
+      </div>
     </>
   );
 }
