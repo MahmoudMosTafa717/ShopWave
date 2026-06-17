@@ -9,6 +9,7 @@ import { wishlistContext } from '../../context/Wishlist/Wishlist.jsx';
 import { authContext } from '../../context/Auth/Auth.jsx';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import Spinner from '../../components/Spinner/Spinner';
 
 export default function ProductDetails() {
   const { addProduct, cartItemIds } = useContext(cartContext);
@@ -43,26 +44,24 @@ export default function ProductDetails() {
       });
   }, [id]);
 
+  if (!ProdDetails || (Array.isArray(ProdDetails) && ProdDetails.length === 0)) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh] w-full">
+        <Spinner />
+      </div>
+    );
+  }
+
   const isAddedToCart = cartItemIds && ProdDetails && cartItemIds.includes(ProdDetails.id);
   const isAddedToWishlist = wishlistItemsIds && ProdDetails && wishlistItemsIds.includes(ProdDetails.id);
 
   const handleAddToCart = () => {
-    if (!userToken) {
-      toast.error('Please login to continue shopping.');
-      navigate('/login');
-      return;
-    }
     if (!isAddedToCart) {
       addProduct(ProdDetails.id);
     }
   };
 
   const handleAddToWishlist = () => {
-    if (!userToken) {
-      toast.error('Please login to continue shopping.');
-      navigate('/login');
-      return;
-    }
     if (!isAddedToWishlist) {
       addToWishlist(ProdDetails.id);
     }

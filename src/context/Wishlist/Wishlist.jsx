@@ -16,18 +16,61 @@ export default function WishlistContextProvider(props) {
 
   useEffect(() => {
     if (userToken) {
-      getWishlist().then((data) => {
-        if (data) {
-          const ids = data.map((item) => item._id);
-          setWishlistItemsIds(ids);
-        }
-      }).catch(() => {});
+      const savedGuestWishlist = localStorage.getItem('shopwave_guest_wishlist');
+      const guestIds = savedGuestWishlist ? JSON.parse(savedGuestWishlist) : [];
+
+      if (guestIds.length > 0) {
+        const syncPromises = guestIds.map(id =>
+          axios.post(URL, { productId: id }, { headers: { token: userToken } })
+            .catch(() => null)
+        );
+
+        Promise.all(syncPromises).then(() => {
+          localStorage.removeItem('shopwave_guest_wishlist');
+          getWishlist().then((data) => {
+            if (data) {
+              const ids = data.map((item) => item._id);
+              setWishlistItemsIds(ids);
+            }
+          });
+        });
+      } else {
+        getWishlist().then((data) => {
+          if (data) {
+            const ids = data.map((item) => item._id);
+            setWishlistItemsIds(ids);
+          }
+        }).catch(() => {});
+      }
     } else {
-      setWishlistItemsIds([]);
+      const saved = localStorage.getItem('shopwave_guest_wishlist');
+      const ids = saved ? JSON.parse(saved) : [];
+      setWishlistItemsIds(ids);
     }
   }, [userToken]);
 
   function addToWishlist(id) {
+    if (!userToken) {
+      const promise = new Promise((resolve) => {
+        setTimeout(() => {
+          const saved = localStorage.getItem('shopwave_guest_wishlist');
+          let ids = saved ? JSON.parse(saved) : [];
+          if (!ids.includes(id)) {
+            ids.push(id);
+          }
+          localStorage.setItem('shopwave_guest_wishlist', JSON.stringify(ids));
+          setWishlistItemsIds(ids);
+          resolve({ status: 'success' });
+        }, 300);
+      });
+
+      return toast.promise(promise, {
+        loading: 'Adding product to wishlist...',
+        success: 'Product added successfully!',
+        error: 'Error adding product',
+      });
+    }
+
     const data = {
       productId: id,
     };
@@ -56,6 +99,25 @@ export default function WishlistContextProvider(props) {
   }
 
   function deleteWishlistItem(id) {
+    if (!userToken) {
+      const promise = new Promise((resolve) => {
+        setTimeout(() => {
+          const saved = localStorage.getItem('shopwave_guest_wishlist');
+          let ids = saved ? JSON.parse(saved) : [];
+          const filtered = ids.filter(itemId => itemId !== id);
+          localStorage.setItem('shopwave_guest_wishlist', JSON.stringify(filtered));
+          setWishlistItemsIds(filtered);
+          resolve({ status: 'success' });
+        }, 300);
+      });
+
+      return toast.promise(promise, {
+        loading: 'Removing product from wishlist...',
+        success: 'Product removed successfully!',
+        error: 'Error removing product',
+      });
+    }
+
     const config = {
       method: 'delete',
       url: `${URL}/${id}`,
@@ -80,6 +142,22 @@ export default function WishlistContextProvider(props) {
   }
 
   function getWishlist() {
+    if (!userToken) {
+      const saved = localStorage.getItem('shopwave_guest_wishlist');
+      const ids = saved ? JSON.parse(saved) : [];
+      if (ids.length === 0) {
+        return Promise.resolve([]);
+      }
+
+      const promises = ids.map(id =>
+        axios.get(`https://ecommerce.routemisr.com/api/v1/products/${id}`)
+          .then(res => res.data.data)
+          .catch(() => null)
+      );
+
+      return Promise.all(promises).then(results => results.filter(p => p !== null));
+    }
+
     let config = {
       method: 'get',
       url: URL,
