@@ -28,7 +28,7 @@ export default function Footer() {
                     Other Sites
                   </h3>
                   <a
-                    href="https://diagnotech.netlify.app/"
+                    href="https://diagnotech-frontend.vercel.app/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block mt-2 text-sm text-gray-300 hover:text-amazon-orange hover:underline transition-colors"

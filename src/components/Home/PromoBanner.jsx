@@ -22,12 +22,12 @@ export default function PromoBanner() {
               </p>
             </div>
             <div className="flex-shrink-0">
-              <Link
-                to="/products"
+              <a
+                href="/#bestsellers"
                 className="inline-block bg-amazon-orange text-white font-bold text-lg py-4 px-10 rounded-lg shadow-lg hover:bg-opacity-90 transform hover:-translate-y-1 transition-all duration-300"
               >
                 Shop the Sale
-              </Link>
+              </a>
             </div>
           </div>
         </div>

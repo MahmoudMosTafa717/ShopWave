@@ -26,12 +26,12 @@ export default function HeroSection() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link
-              to="/products"
+            <a
+              href="/#featured"
               className="px-8 py-3 bg-amazon-orange text-white font-semibold rounded-lg hover:bg-opacity-90 transition shadow-lg shadow-amazon-orange/30 text-center"
             >
               Shop Now
-            </Link>
+            </a>
             <Link
               to="/categories"
               className="px-8 py-3 bg-white text-amazon-dark font-semibold rounded-lg hover:bg-gray-100 transition shadow-lg text-center"
