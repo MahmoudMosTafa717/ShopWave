@@ -1,15 +1,19 @@
-import logo from '../../assets/ShopWave Logo.png';
+import logo from '../../assets/shopWave-logo-bgr.png';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { authContext } from '../../context/Auth/Auth';
 import { initFlowbite } from 'flowbite';
 import { productsContext } from '../../context/Products/Products';
+import { cartContext } from '../../context/Cart/Cart';
+import toast from 'react-hot-toast';
 
 export default function Navbar() {
   const { userToken, setUserToken } = useContext(authContext);
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const { data, setSearchRes } = useContext(productsContext);
+  const { numOfCartItems } = useContext(cartContext);
 
   function logout() {
     setUserToken(null);
@@ -30,235 +34,172 @@ export default function Navbar() {
     }
   }
 
+  const handleProtectedNavigation = (e, path) => {
+    if (!userToken) {
+      e.preventDefault();
+      toast.error('Please login to continue.');
+      navigate('/login');
+    }
+  };
+
   useEffect(() => {
     initFlowbite();
   }, []);
 
-  const getLinkClass = (path) => {
-    return location.pathname === path
-      ? 'block py-2 px-3 text-white bg-green-700 rounded lg:bg-transparent lg:text-green-700 lg:p-0 lg:dark:text-green-500'
-      : 'block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 lg:hover:bg-transparent lg:hover:text-green-700 lg:p-0 dark:text-white lg:dark:hover:text-green-500 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700';
-  };
-
   return (
     <>
-      <nav className="bg-white border-gray-200 shadow-md dark:bg-gray-900 fixed top-0 w-full z-50">
-        <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+      <nav className="fixed top-0 w-full z-50">
+        {/* Main Top Navbar */}
+        <div className="bg-amazon-dark border-b border-gray-700 shadow-sm px-4 py-3 flex items-center justify-between">
           <Link
             to="/"
-            className="flex items-center space-x-3 rtl:space-x-reverse"
+            className="flex items-center space-x-3 rtl:space-x-reverse mr-4 lg:mr-8 shrink-0"
           >
-            <img src={logo} className="h-8" alt="ShopWave Logo" />
+            <img src={logo} className="h-8 bg-white p-1 rounded" alt="ShopWave Logo" />
           </Link>
-          <div className="flex lg:order-2">
+          
+          <div className="flex-1 max-w-4xl mx-auto hidden lg:block">
+            <div className="relative flex">
+              <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                <svg className="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                onKeyUp={(e) => handleSearch(e)}
+                className="block w-full p-2.5 ps-10 text-sm text-gray-900 border-0 rounded-lg bg-white focus:ring-2 focus:ring-amazon-orange outline-none"
+                placeholder="Search products, categories, brands..."
+                aria-label="Search"
+              />
+              <button className="absolute right-0 top-0 bottom-0 px-4 bg-amazon-orange text-white rounded-r-lg hover:bg-opacity-90 font-bold transition-colors">
+                Search
+              </button>
+            </div>
+          </div>
+          
+          <div className="flex space-x-4 items-center ml-auto lg:ml-8 shrink-0">
             {userToken ? (
-              <>
-                <button
-                  type="button"
-                  data-collapse-toggle="navbar-search"
-                  aria-controls="navbar-search"
-                  aria-expanded="false"
-                  className="lg:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5 me-1"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                    />
-                  </svg>
-                  <span className="sr-only">Search</span>
-                </button>
-                <div className="relative hidden lg:block">
-                  <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                    <svg
-                      className="w-4 h-4 text-gray-500 dark:text-gray-400"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                      />
-                    </svg>
-                    <span className="sr-only">Search icon</span>
-                  </div>
-                  <input
-                    type="text"
-                    onKeyUp={(e) => handleSearch(e)}
-                    id="search-navbar"
-                    className="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500"
-                    placeholder="Search..."
-                  />
+              <div className="hidden lg:flex items-center gap-4">
+                <div className="text-white text-sm">
+                  <span className="block text-xs text-gray-300">Hello, User</span>
+                  <span className="font-bold">Account & Lists</span>
                 </div>
-              </>
+                <Link
+                  to="/login"
+                  onClick={logout}
+                  className="border-2 border-gray-500 text-gray-300 hover:text-white hover:border-white font-medium rounded-lg text-sm px-4 py-2 transition-all"
+                >
+                  Logout
+                </Link>
+              </div>
             ) : (
-              ''
+              <div className="hidden lg:flex items-center gap-3">
+                <div className="text-white text-sm mr-2">
+                  <span className="block text-xs text-gray-300">Hello, sign in</span>
+                  <span className="font-bold">Account & Lists</span>
+                </div>
+                <Link
+                  to="/login"
+                  className="text-white hover:text-amazon-orange font-medium text-sm px-3 py-2 transition-colors border border-transparent"
+                >
+                  Log in
+                </Link>
+                <Link
+                  to="/register"
+                  className="bg-amazon-orange hover:bg-opacity-90 text-white font-bold rounded-lg text-sm px-4 py-2 transition-all shadow-md shadow-amazon-orange/20"
+                >
+                  Sign up
+                </Link>
+              </div>
             )}
+
+            <Link to="/cart" aria-label="Cart" onClick={(e) => handleProtectedNavigation(e, '/cart')} className="relative flex items-center text-white hover:text-amazon-orange transition-colors ml-4 mr-2 group">
+              <div className="relative">
+                <i className="fas fa-shopping-cart fa-2x"></i>
+                {userToken && numOfCartItems > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-amazon-orange text-amazon-dark text-xs font-bold px-1.5 py-0.5 rounded-full border-2 border-amazon-dark group-hover:border-amazon-orange transition-colors">
+                    {numOfCartItems}
+                  </span>
+                )}
+              </div>
+              <span className="hidden lg:block font-bold mt-2 ml-1">Cart</span>
+            </Link>
+
             <button
-              data-collapse-toggle="navbar-search"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               type="button"
-              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-              aria-controls="navbar-search"
-              aria-expanded="false"
+              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-white rounded-lg lg:hidden hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600"
+              aria-controls="mobile-menu"
+              aria-expanded={isMobileMenuOpen}
+              aria-label="Toggle Menu"
             >
-              <span className="sr-only">Open main menu</span>
-              <svg
-                className="w-5 h-5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 17 14"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M1 1h15M1 7h15M1 13h15"
-                />
+              <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M1 1h15M1 7h15M1 13h15" />
               </svg>
             </button>
           </div>
-          <div
-            className="items-center justify-between hidden w-full lg:flex lg:w-auto lg:order-1"
-            id="navbar-search"
-          >
+        </div>
+
+        {/* Mobile Menu Dropdown & Search (Hidden on Desktop) */}
+        <div className={`lg:hidden bg-amazon-light text-amazon-dark ${isMobileMenuOpen ? 'block' : 'hidden'}`} id="mobile-menu">
+          <div className="p-3 bg-amazon-dark">
+            <input
+              type="text"
+              onKeyUp={(e) => handleSearch(e)}
+              className="block w-full p-2.5 text-sm text-gray-900 border-0 rounded-lg bg-white focus:ring-2 focus:ring-amazon-orange outline-none"
+              placeholder="Search ShopWave..."
+            />
+          </div>
+          <ul className="flex flex-col font-medium p-4 space-y-2">
+            <li><Link to="/" className="block py-2 text-amazon-dark font-bold border-b border-gray-300">Home</Link></li>
+            <li><Link to="/categories" className="block py-2 text-amazon-dark font-bold border-b border-gray-300">Categories</Link></li>
+            <li><Link to="/brands" className="block py-2 text-amazon-dark font-bold border-b border-gray-300">Brands</Link></li>
+            <li><Link to="/wishlist" onClick={(e) => handleProtectedNavigation(e, '/wishlist')} className="block py-2 text-amazon-dark font-bold border-b border-gray-300">Wishlist</Link></li>
             {userToken ? (
-              <div className="relative mt-3 lg:hidden">
-                <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                  <svg
-                    className="w-4 h-4 text-gray-500 dark:text-gray-400"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                    />
-                  </svg>
-                </div>
-                <input
-                  type="text"
-                  onKeyUp={(e) => handleSearch(e)}
-                  id="search-navbar"
-                  className="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500"
-                  placeholder="Search..."
-                />
-              </div>
+              <>
+                <li><Link to="/allorders" className="block py-2 text-amazon-dark font-bold border-b border-gray-300">Orders</Link></li>
+                <li><Link to="/login" onClick={logout} className="block py-2 text-red-600 font-bold mt-2">Logout</Link></li>
+              </>
             ) : (
-              ''
+              <div className="flex gap-4 mt-4">
+                <Link to="/login" className="flex-1 text-center py-2 border-2 border-amazon-dark text-amazon-dark rounded font-bold">Log in</Link>
+                <Link to="/register" className="flex-1 text-center py-2 bg-amazon-orange text-white rounded font-bold">Sign up</Link>
+              </div>
             )}
-            <ul
-              className={`flex flex-col p-4 lg:p-0 mt-4 ${
-                userToken ? '' : 'mr-40'
-              } w-full  font-medium border border-gray-100 rounded-lg bg-gray-50 lg:space-x-8 rtl:space-x-reverse lg:flex-row lg:mt-0 lg:border-0 lg:bg-white dark:bg-gray-800 lg:dark:bg-gray-900 dark:border-gray-700`}
-            >
-              {userToken ? (
-                <>
-                  {' '}
-                  <li>
-                    <Link
-                      to="/"
-                      className={getLinkClass('/')}
-                      aria-current="page"
-                    >
-                      <div className="flex lg:flex-col lg:justify-center items-center space-x-1">
-                        <i className="fas fa-home fa-fw"></i>
-                        <span>Home</span>
-                      </div>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="wishlist" className={getLinkClass('/wishlist')}>
-                      <div className="flex lg:flex-col lg:justify-center items-center space-x-1">
-                        <i className="fas fa-heart fa-fw"></i>
-                        <span>Wishlist</span>
-                      </div>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="cart" className={getLinkClass('/cart')}>
-                      <div className="flex lg:flex-col lg:justify-center items-center space-x-1">
-                        <i className="fas fa-cart-shopping fa-fw"></i>
-                        <span>Cart</span>
-                      </div>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="brands" className={getLinkClass('/brands')}>
-                      <div className="flex lg:flex-col lg:justify-center items-center space-x-1">
-                        <i className="fa-solid fa-tags" />
-                        <span>Brands</span>
-                      </div>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="categories"
-                      className={getLinkClass('/categories')}
-                    >
-                      <div className="flex lg:flex-col lg:justify-center items-center space-x-1">
-                        <i className="fa-solid fa-list" />
-                        <span>Categories</span>
-                      </div>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="login"
-                      onClick={logout}
-                      className={getLinkClass('/login')}
-                    >
-                      <div className="flex lg:flex-col lg:justify-center items-center space-x-1">
-                        <i className="fas fa-arrow-right-from-bracket fa-fw"></i>
-                        <span>Logout</span>
-                      </div>
-                    </Link>
-                  </li>
-                </>
-              ) : (
-                <>
-                  <li>
-                    <Link to="login" className={getLinkClass('/login')}>
-                      <div className="flex lg:flex-col lg:justify-center items-center space-x-1">
-                        <i className="fas fa-sign-in-alt fa-fw"></i>
-                        <span>Login</span>
-                      </div>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="register" className={getLinkClass('/register')}>
-                      <div className="flex lg:flex-col lg:justify-center items-center space-x-1">
-                        <i className="fas fa-user-plus fa-fw"></i>
-                        <span>Register</span>
-                      </div>
-                    </Link>
-                  </li>
-                </>
-              )}
-            </ul>
+          </ul>
+        </div>
+
+        {/* Secondary Sub-Navbar (Persistent across all pages) */}
+        <div className="hidden lg:flex bg-amazon-light text-amazon-dark px-4 py-1.5 shadow-sm text-sm font-medium items-center overflow-x-auto whitespace-nowrap">
+          <div className="flex items-center gap-6 max-w-screen-xl mx-auto w-full">
+            {/* Menu Icon */}
+            <button className="flex items-center gap-1 font-bold hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">
+              <i className="fa-solid fa-bars"></i> All
+            </button>
+            
+            {userToken ? (
+              <>
+                <Link to="/allorders" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Your Orders</Link>
+                <Link to="/wishlist" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Wishlist</Link>
+                <Link to="/categories" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Categories</Link>
+                <Link to="/brands" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Brands</Link>
+                <Link to="/cart" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Cart</Link>
+              </>
+            ) : (
+              <>
+                <a href="/#categories" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Categories</a>
+                <a href="/#bestsellers" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Best Sellers</a>
+                <a href="/#promo" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Today's Deals</a>
+                <a href="/#whychooseus" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Customer Service</a>
+                <a href="/#testimonials" className="hover:text-amazon-orange border border-transparent hover:border-white px-2 py-1 rounded transition-colors">Testimonials</a>
+              </>
+            )}
           </div>
         </div>
       </nav>
+      {/* Spacer to prevent content from hiding behind fixed navbars */}
+      <div className="h-[110px] lg:h-[114px] w-full"></div>
     </>
   );
 }
