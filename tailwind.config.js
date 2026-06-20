@@ -4,7 +4,15 @@ export default {
   darkMode: 'selector',
   content: ['./src/**/*.{html,js,jsx}', './index.html'],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'amazon-orange': '#ff9900',
+        'amazon-blue': '#146eb4',
+        'amazon-dark': '#232f3e',
+        'amazon-light': '#f2f2f2',
+        'amazon-black': '#000000',
+      },
+    },
     container: {
       center: true,
       padding: {
