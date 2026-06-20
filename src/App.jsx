@@ -20,6 +20,7 @@ import Checkout from './pages/Checkout/Checkout';
 import Wishlist from './pages/Wishlist/Wishlist';
 import Brands from './pages/Brands/Brands';
 import Categories from './pages/Categories/Categories';
+import CategoryProducts from './pages/CategoryProducts/CategoryProducts';
 import ProductsContextProvider from './context/Products/Products';
 import Search from './pages/Search/Search';
 import RedirectIfAuthenticated from './components/RedirectIfAuthenticated/RedirectIfAuthenticated';
@@ -35,11 +36,7 @@ function App() {
       children: [
         {
           index: true,
-          element: (
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          ),
+          element: <Home />,
         },
         {
           path: 'login',
@@ -68,11 +65,7 @@ function App() {
         },
         {
           path: 'product/:id',
-          element: (
-            <ProtectedRoute>
-              <ProductDetails />
-            </ProtectedRoute>
-          ),
+          element: <ProductDetails />,
         },
         {
           path: '/checkout/:id',
@@ -115,12 +108,16 @@ function App() {
           ),
         },
         {
-          path: 'search',
+          path: 'categories/:categoryId',
           element: (
             <ProtectedRoute>
-              <Search />
+              <CategoryProducts />
             </ProtectedRoute>
           ),
+        },
+        {
+          path: 'search',
+          element: <Search />,
         },
         {
           path: 'allorders',
