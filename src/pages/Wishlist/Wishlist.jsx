@@ -1,27 +1,37 @@
 import { useContext, useEffect, useState } from 'react';
 import { wishlistContext } from '../../context/Wishlist/Wishlist';
-import Spinner from '../../components/Spinner/Spinner';
 import { cartContext } from '../../context/Cart/Cart';
 import { Link } from 'react-router-dom';
+import Spinner from '../../components/Spinner/Spinner';
 import { Helmet } from 'react-helmet';
 
 export default function Wishlist() {
   const { getWishlist, deleteWishlistItem } = useContext(wishlistContext);
   const { addProduct } = useContext(cartContext);
-  const [wishlistProducts, setWishlistProducts] = useState(null);
+  const [data, setData] = useState(null);
 
-  async function fetchGetWishlist() {
-    const products = await getWishlist();
-    setWishlistProducts(products);
-  }
-
-  async function fetchDeleteProduct(id) {
+  const handleDeleteItem = async (id) => {
     await deleteWishlistItem(id);
-    fetchGetWishlist();
+    main();
+  };
+
+  const handleAddToCart = async (id) => {
+    await addProduct(id);
+    await deleteWishlistItem(id);
+    main();
+  };
+
+  async function main() {
+    try {
+      const result = await getWishlist();
+      setData(result);
+    } catch (err) {
+      setData([]);
+    }
   }
 
   useEffect(() => {
-    fetchGetWishlist();
+    main();
   }, []);
 
   return (
@@ -29,8 +39,9 @@ export default function Wishlist() {
       <Helmet>
         <title>ShopWave - Wishlist</title>
       </Helmet>
-      <div className="container flex flex-wrap">
-        <div className="relative overflow-x-auto shadow-md sm:rounded-lg w-full">
+      <div className="container py-10 flex flex-wrap">
+        <h1 className="text-3xl font-extrabold text-amazon-dark mb-6 w-full">Your Wishlist</h1>
+        <div className="relative overflow-x-auto shadow-md sm:rounded-lg w-full bg-white border border-gray-100">
           <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
@@ -49,19 +60,24 @@ export default function Wishlist() {
               </tr>
             </thead>
             <tbody>
-              {wishlistProducts ? (
-                wishlistProducts.length === 0 ? (
+              {data ? (
+                data.length === 0 ? (
                   <tr>
                     <td
                       colSpan={4}
-                      className="text-center text-xl h-20 font-bold md:text-2xl lg:text-3xl"
+                      className="text-center text-xl h-40 font-bold md:text-2xl lg:text-3xl text-gray-400"
                     >
-                      <i className="fas fa-box-open me-3"></i>
-                      Wow, such empty!
+                      <div className="flex flex-col items-center justify-center space-y-4">
+                        <i className="fas fa-heart-crack text-5xl"></i>
+                        <span>Your wishlist is empty.</span>
+                        <Link to="/" className="text-sm font-medium text-amazon-blue hover:text-amazon-orange underline">
+                          Explore Products
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ) : (
-                  wishlistProducts?.map((product) => (
+                  data.map((product) => (
                     <tr
                       key={product._id}
                       className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -75,36 +91,30 @@ export default function Wishlist() {
                           />
                         </Link>
                       </td>
-
                       <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                         <Link
                           to={`/product/${product._id}`}
-                          className="hover:underline"
+                          className="hover:text-amazon-orange transition-colors"
                         >
                           {product.title}
                         </Link>
                       </td>
-                      <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                      <td className="px-6 py-4 font-semibold text-amazon-dark text-lg">
                         EGP {product.price}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex flex-col space-y-3">
+                        <div className="flex flex-col sm:flex-row gap-3">
                           <button
-                            href="#"
-                            onClick={() => addProduct(product._id)}
-                            className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                            onClick={() => handleAddToCart(product._id)}
+                            className="text-white bg-amazon-orange hover:bg-opacity-90 focus:ring-4 focus:ring-amazon-orange/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center shadow-md transition-all flex items-center justify-center gap-2"
                           >
-                            <i className="fas fa-cart-plus me-2"></i>
-                            <span className="hidden md:inline">
-                              Add to cart
-                            </span>
+                            <i className="fas fa-cart-plus"></i> Add to Cart
                           </button>
-
                           <button
-                            onClick={() => fetchDeleteProduct(product._id)}
-                            className="font-medium text-red-600 dark:text-red-500 hover:underline"
+                            onClick={() => handleDeleteItem(product._id)}
+                            className="text-red-600 hover:text-red-800 border border-red-200 hover:bg-red-50 focus:ring-4 focus:ring-red-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-all flex items-center justify-center gap-2"
                           >
-                            Remove
+                            <i className="fas fa-trash-can"></i> Remove
                           </button>
                         </div>
                       </td>
@@ -113,10 +123,8 @@ export default function Wishlist() {
                 )
               ) : (
                 <tr>
-                  <td colSpan="4" className="py-4">
-                    <div>
-                      <Spinner />
-                    </div>
+                  <td colSpan="4" className="py-20 text-center">
+                    <Spinner />
                   </td>
                 </tr>
               )}

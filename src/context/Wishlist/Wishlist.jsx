@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { authContext } from '../Auth/Auth';
 
@@ -7,11 +7,25 @@ export const wishlistContext = createContext(null);
 
 export default function WishlistContextProvider(props) {
   const { userToken } = useContext(authContext);
+  const [wishlistItemsIds, setWishlistItemsIds] = useState([]);
 
   const headers = {
     token: userToken,
   };
   const URL = 'https://ecommerce.routemisr.com/api/v1/wishlist';
+
+  useEffect(() => {
+    if (userToken) {
+      getWishlist().then((data) => {
+        if (data) {
+          const ids = data.map((item) => item._id);
+          setWishlistItemsIds(ids);
+        }
+      }).catch(() => {});
+    } else {
+      setWishlistItemsIds([]);
+    }
+  }, [userToken]);
 
   function addToWishlist(id) {
     const data = {
@@ -26,7 +40,10 @@ export default function WishlistContextProvider(props) {
     };
     return toast.promise(
       axios(config)
-        .then((response) => response.data)
+        .then((response) => {
+          setWishlistItemsIds((prev) => [...prev, id]);
+          return response.data;
+        })
         .catch((error) => {
           throw error;
         }),
@@ -47,7 +64,10 @@ export default function WishlistContextProvider(props) {
 
     return toast.promise(
       axios(config)
-        .then((response) => response.data)
+        .then((response) => {
+          setWishlistItemsIds((prev) => prev.filter((itemId) => itemId !== id));
+          return response.data;
+        })
         .catch((error) => {
           throw error;
         }),
@@ -75,7 +95,7 @@ export default function WishlistContextProvider(props) {
 
   return (
     <wishlistContext.Provider
-      value={{ addToWishlist, getWishlist, deleteWishlistItem }}
+      value={{ wishlistItemsIds, addToWishlist, getWishlist, deleteWishlistItem }}
     >
       {props.children}
     </wishlistContext.Provider>

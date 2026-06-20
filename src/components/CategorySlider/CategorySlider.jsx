@@ -1,26 +1,34 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { useEffect } from 'react';
 import Slider from 'react-slick';
 import Spinner from '../Spinner/Spinner';
+import { Link } from 'react-router-dom';
 
 export default function CategorySlider() {
+  const { data } = useQuery({
+    queryKey: ['categories'],
+    queryFn: getCategories,
+  });
+
+  function getCategories() {
+    return axios.get('https://ecommerce.routemisr.com/api/v1/categories');
+  }
+
   const settings = {
     dots: true,
     infinite: true,
-    slidesToShow: 5,
-    slidesToScroll: 1,
+    speed: 500,
+    slidesToShow: 6,
+    slidesToScroll: 2,
     arrows: false,
     autoplay: true,
-    autoplaySpeed: 1500,
-    pauseOnHover: true,
-
+    autoplaySpeed: 3000,
     responsive: [
       {
         breakpoint: 1024,
         settings: {
-          slidesToShow: 3,
-          slidesToScroll: 1,
+          slidesToShow: 4,
+          slidesToScroll: 3,
           infinite: true,
           dots: true,
         },
@@ -29,64 +37,47 @@ export default function CategorySlider() {
         breakpoint: 600,
         settings: {
           slidesToShow: 2,
-          slidesToScroll: 1,
+          slidesToScroll: 2,
           initialSlide: 2,
         },
       },
       {
         breakpoint: 480,
         settings: {
-          slidesToShow: 1,
+          slidesToShow: 2,
           slidesToScroll: 1,
         },
       },
     ],
   };
 
-  const { data } = useQuery({
-    queryKey: ['category'],
-    queryFn: getCategories,
-    select: (data) => data.data.data,
-  });
-
-  function getCategories() {
-    return axios.get('https://ecommerce.routemisr.com/api/v1/categories');
-  }
-
-  useEffect(() => {
-    getCategories();
-  }, []);
-
   return (
-    <div className="container my-10">
-      <h3 className="text-3xl font-medium mb-5">Popular Categories</h3>
-      {data ? (
-        <>
+    <>
+      <div className="container py-6 hidden md:block">
+        <h3 className="text-2xl font-bold mb-6 text-amazon-dark">Shop by Category</h3>
+        {data ? (
           <Slider {...settings}>
-            {data.map((category) => (
-              <div
-                key={category._id}
-                className="rounded-lg px-4 dark:bg-gray-800 dark:border-gray-700"
-              >
-                <img
-                  className="rounded-lg hover:shadow-green-300 transition-shadow shadow-md object-cover object-top w-full h-80"
-                  src={category.image}
-                  alt={category.name}
-                />
-                <div className="text-center">
-                  <a href="#">
-                    <h3 className="text-gray-900 mt-2 overflow-hidden text-ellipsis whitespace-nowrap font-semibold text-xl tracking-tight dark:text-white">
-                      {category.name}
-                    </h3>
-                  </a>
-                </div>
+            {data?.data?.data.map((category) => (
+              <div key={category._id} className="p-2">
+                <Link to={`/categories/${category._id}`} className="block group">
+                  <div className="relative rounded-lg overflow-hidden mb-3 aspect-square bg-white shadow-sm border border-gray-100 group-hover:shadow-amazon-orange/30 transition-all duration-300">
+                    <img
+                      src={category.image}
+                      alt={category.name}
+                      className="object-contain w-full h-full p-4 group-hover:scale-110 transition-transform duration-500"
+                    />
+                  </div>
+                  <h4 className="text-center font-semibold text-gray-800 text-sm group-hover:text-amazon-orange transition-colors">
+                    {category.name}
+                  </h4>
+                </Link>
               </div>
             ))}
           </Slider>
-        </>
-      ) : (
-        <Spinner />
-      )}
-    </div>
+        ) : (
+          <Spinner />
+        )}
+      </div>
+    </>
   );
 }
