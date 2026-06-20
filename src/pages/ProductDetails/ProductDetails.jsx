@@ -6,10 +6,15 @@ import { Helmet } from 'react-helmet';
 import { cartContext } from '../../context/Cart/Cart.jsx';
 import { productsContext } from '../../context/Products/Products.jsx';
 import { wishlistContext } from '../../context/Wishlist/Wishlist.jsx';
+import { authContext } from '../../context/Auth/Auth.jsx';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 export default function ProductDetails() {
-  const { addProduct } = useContext(cartContext);
+  const { addProduct, cartItemIds } = useContext(cartContext);
   const { renderStars } = useContext(productsContext);
+  const { userToken } = useContext(authContext);
+  const navigate = useNavigate();
   const [ProdDetails, setProdDetails] = useState([]);
 
   const settings = {
@@ -25,7 +30,7 @@ export default function ProductDetails() {
 
   const { id } = useParams();
 
-  const { addToWishlist } = useContext(wishlistContext);
+  const { addToWishlist, wishlistItemsIds } = useContext(wishlistContext);
 
   useEffect(() => {
     axios
@@ -36,18 +41,44 @@ export default function ProductDetails() {
       .catch((error) => {
         throw error;
       });
-  }, []);
+  }, [id]);
+
+  const isAddedToCart = cartItemIds && ProdDetails && cartItemIds.includes(ProdDetails.id);
+  const isAddedToWishlist = wishlistItemsIds && ProdDetails && wishlistItemsIds.includes(ProdDetails.id);
+
+  const handleAddToCart = () => {
+    if (!userToken) {
+      toast.error('Please login to continue shopping.');
+      navigate('/login');
+      return;
+    }
+    if (!isAddedToCart) {
+      addProduct(ProdDetails.id);
+    }
+  };
+
+  const handleAddToWishlist = () => {
+    if (!userToken) {
+      toast.error('Please login to continue shopping.');
+      navigate('/login');
+      return;
+    }
+    if (!isAddedToWishlist) {
+      addToWishlist(ProdDetails.id);
+    }
+  };
 
   return (
     <>
       <Helmet>
-        <title>{ProdDetails.title}</title>
+        <title>{ProdDetails.title || 'Product Details'} - ShopWave</title>
+        <meta name="description" content={ProdDetails.description || 'View details and purchase this product on ShopWave.'} />
       </Helmet>
 
-      <div className="container dark:bg-gray-800">
+      <div className="container dark:bg-gray-800 py-12">
         <div className="flex flex-col md:flex-row md:space-x-8">
           <div className="w-full md:w-1/3 mb-8 md:mb-0">
-            <div className="rounded-lg mb-7 dark:bg-gray-700">
+            <div className="rounded-lg mb-7 dark:bg-gray-700 bg-white p-4 shadow-sm border border-gray-100">
               <Slider {...settings}>
                 {ProdDetails.images
                   ? ProdDetails.images.map((img, index) => (
@@ -63,58 +94,82 @@ export default function ProductDetails() {
               </Slider>
             </div>
             <div className="flex mt-4 space-x-4">
-              <button
-                onClick={() => addProduct(ProdDetails.id)}
-                className="w-1/2 bg-green-700 hover:bg-green-800 dark:bg-green-600 text-white py-2 px-4 rounded-lg font-bold dark:hover:bg-green-700"
-              >
-                Add to cart
-              </button>
-              <button className="w-1/2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white py-2 px-4 rounded-lg font-bold hover:bg-gray-300 dark:hover:bg-gray-600"
-                onClick={() => addToWishlist(ProdDetails.id)}
-              >
-                Add to Wishlist
-              </button>
+              {isAddedToCart ? (
+                <button
+                  disabled
+                  className="w-1/2 bg-gray-200 text-amazon-dark cursor-not-allowed py-2 px-4 rounded-lg font-bold flex justify-center items-center gap-2"
+                >
+                  <i className="fa-solid fa-check text-green-600"></i> Added
+                </button>
+              ) : (
+                <button
+                  onClick={handleAddToCart}
+                  className="w-1/2 bg-amazon-orange hover:bg-opacity-90 dark:bg-amazon-orange text-white py-2 px-4 rounded-lg font-bold dark:hover:bg-opacity-80 transition-all"
+                >
+                  Add to cart
+                </button>
+              )}
+              
+              {isAddedToWishlist ? (
+                <button
+                  disabled
+                  className="w-1/2 bg-gray-200 text-amazon-dark cursor-not-allowed py-2 px-4 rounded-lg font-bold flex justify-center items-center gap-2"
+                >
+                  <i className="fa-solid fa-heart text-amazon-orange"></i> Saved
+                </button>
+              ) : (
+                <button 
+                  onClick={handleAddToWishlist}
+                  className="w-1/2 bg-amazon-light dark:bg-gray-700 text-amazon-dark dark:text-white py-2 px-4 rounded-lg font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+                >
+                  Add to Wishlist
+                </button>
+              )}
             </div>
           </div>
 
-          <div className="w-full md:w-2/3">
-            <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-10">
+          <div className="w-full md:w-2/3 bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+            <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">
               {ProdDetails.title}
             </h2>
 
-            <span className="text-xl font-bold text-gray-700 dark:text-gray-300">
-              Product Description:
-            </span>
-            <p className="text-lg text-gray-600 dark:text-gray-300 mb-5">
-              {ProdDetails.description}
-            </p>
+            <div className="mb-8">
+              <span className="text-xl font-bold text-gray-700 dark:text-gray-300 block mb-2">
+                Product Description:
+              </span>
+              <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                {ProdDetails.description}
+              </p>
+            </div>
 
-            <div className="mb-4">
-              <div className="flex justify-between my-4">
+            <div className="border-t border-gray-100 pt-6">
+              <div className="flex justify-between items-center mb-6">
                 <div className="text-xl font-bold text-gray-800 dark:text-white">
                   Rating
                 </div>
                 <div className="flex items-center">
-                  <span className="flex">
-                    {renderStars(Math.round(ProdDetails.ratingsAverage)).map(
+                  <span className="flex text-amazon-orange" aria-label={`Rating: ${ProdDetails.ratingsAverage} out of 5`}>
+                    {ProdDetails.ratingsAverage ? renderStars(Math.round(ProdDetails.ratingsAverage)).map(
                       (star, index) => (
-                        <span key={index} className="transform scale-150">
+                        <span key={index} className="transform scale-125 mx-1">
                           {star}
                         </span>
                       )
-                    )}
+                    ) : ''}
                   </span>
-                  <span className="bg-gray-100 text-gray-800 text-xl font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ml-3">
+                  <span className="bg-amazon-light text-amazon-dark text-lg font-bold px-3 py-1 rounded dark:bg-amazon-dark dark:text-amazon-light ml-4">
                     {ProdDetails.ratingsAverage}
                   </span>
                 </div>
               </div>
 
-              <div className="my-5 flex justify-between text-gray-900 dark:text-white">
+              <div className="flex justify-between items-center text-gray-900 dark:text-white bg-gray-50 p-6 rounded-lg border border-gray-100">
                 <div className="text-2xl font-bold text-gray-700 dark:text-gray-300">
                   Price
                 </div>
-                <div className="text-xl font-bold">EGP {ProdDetails.price}</div>
+                <div className="text-3xl font-extrabold text-amazon-dark">
+                  EGP {ProdDetails.price}
+                </div>
               </div>
             </div>
           </div>

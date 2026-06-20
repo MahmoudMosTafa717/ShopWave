@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { authContext } from '../Auth/Auth';
 
@@ -7,11 +7,28 @@ export const cartContext = createContext(null);
 
 export default function CartContextProvider(props) {
   const { userToken } = useContext(authContext);
+  const [cartItemIds, setCartItemIds] = useState([]);
+  const [numOfCartItems, setNumOfCartItems] = useState(0);
 
   const headers = {
     token: userToken,
   };
   const URL = 'https://ecommerce.routemisr.com/api/v1/cart';
+
+  useEffect(() => {
+    if (userToken) {
+      getProducts().then((data) => {
+        if (data && data.products) {
+          const ids = data.products.map((item) => item.product._id);
+          setCartItemIds(ids);
+          setNumOfCartItems(data.products.length);
+        }
+      }).catch(() => {});
+    } else {
+      setCartItemIds([]);
+      setNumOfCartItems(0);
+    }
+  }, [userToken]);
 
   function getProducts() {
     const config = {
@@ -39,7 +56,11 @@ export default function CartContextProvider(props) {
 
     return toast.promise(
       axios(config)
-        .then((response) => response.data)
+        .then((response) => {
+          setCartItemIds((prev) => [...prev, id]);
+          setNumOfCartItems((prev) => prev + 1);
+          return response.data;
+        })
         .catch((error) => {
           throw error;
         }),
@@ -60,7 +81,15 @@ export default function CartContextProvider(props) {
 
     return toast.promise(
       axios(config)
-        .then((response) => response.data)
+        .then((response) => {
+          // Response returns the updated cart
+          if (response.data && response.data.data && response.data.data.products) {
+            const newIds = response.data.data.products.map((item) => item.product._id);
+            setCartItemIds(newIds);
+            setNumOfCartItems(response.data.numOfCartItems || response.data.data.products.length);
+          }
+          return response.data;
+        })
         .catch((error) => {
           throw error;
         }),
@@ -105,7 +134,11 @@ export default function CartContextProvider(props) {
 
     return axios
       .request(config)
-      .then((response) => response.data)
+      .then((response) => {
+        setCartItemIds([]);
+        setNumOfCartItems(0);
+        return response.data;
+      })
       .catch((error) => {
         throw error;
       });
@@ -114,6 +147,8 @@ export default function CartContextProvider(props) {
   return (
     <cartContext.Provider
       value={{
+        cartItemIds,
+        numOfCartItems,
         getProducts,
         addProduct,
         deleteProduct,
